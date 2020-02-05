@@ -2102,7 +2102,7 @@ serviced_udp_callback(struct comm_point* c, void* arg, int error,
 	}
 	/* perform TC flag check and TCP fallback after updating our
 	 * cache entries for EDNS status and RTT times */
-	if(LDNS_TC_WIRE(sldns_buffer_begin(c->buffer)) && !sq->prefer_tcp_upstream) {
+	if(LDNS_TC_WIRE(sldns_buffer_begin(c->buffer))) {
 		if (!sq->prefer_tcp_upstream) {
 			/* fallback to TCP */
 			/* this discards partial UDP contents */
