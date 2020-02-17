@@ -1873,6 +1873,15 @@ serviced_tcp_callback(struct comm_point* c, void* arg, int error,
 		/* Fall back to UDP immediately rather than trying exponential
 		 * back off in this mode */
 		struct sldns_buffer* buff = sq->outnet->udp_buff;
+		struct timeval now = *sq->outnet->now_tv;
+
+		/* Update infra RTT as if this were a TCP exponential backoff
+		 * anyway; this should lower the preference for the use of
+		 * this server. */
+	        if(!infra_rtt_update(sq->outnet->infra, &sq->addr,
+		    sq->addrlen, sq->zone, sq->zonelen, sq->qtype,
+		    -1, sq->last_rtt, (time_t)now.tv_sec))
+		    log_err("out of memory in TCP exponential backoff.");
 
 		/* Copy the query back into the UDP buffer */
 		sldns_buffer_clear(buff);
@@ -1885,7 +1894,6 @@ serviced_tcp_callback(struct comm_point* c, void* arg, int error,
 			serviced_callbacks(sq, NETEVENT_CLOSED, c, rep);
 		}
 		
-		/* FIXME: should the infra RTT be updated? */
 		return 0;
 	}
 	/* insert address into reply info */
